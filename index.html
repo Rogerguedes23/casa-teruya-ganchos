@@ -134,28 +134,38 @@ async function initApp() {
 }
 
 async function loadProductsFromSupabase() {
-  const { data, error } = await dbClient.from('products').select('*');
+  // Puxa todos os registros em lotes se necessário, aumentando o limite para 50 mil
+  const { data, error } = await dbClient.from('products').select('*').range(0, 49999);
   if (!error && data && data.length > 0) {
     idx = new Map();
     data.forEach(x => {
-      idx.set(norm(x.sku), x);
-      if(x.bar) str(x.bar).split(/[;,|\/\s]+/).forEach(t => {
-        const k = norm(t);
-        if(k && !idx.has(k)) idx.set(k, x);
-      });
+      const skuVal = str(x.sku ?? x.CODPROD ?? '');
+      const barVal = str(x.bar ?? x.CODAUXILIAR ?? '');
+      if(skuVal) {
+        idx.set(norm(skuVal), x);
+        idx.set(norm(x.sku), x); // garante mapeamento exato
+      }
+      if(barVal) {
+        barVal.split(/[;,|\/\s]+/).forEach(t => {
+          const k = norm(t);
+          if(k && !idx.has(k)) idx.set(k, x);
+        });
+      }
     });
     $('#baseInfo').textContent = `Base sincronizada: ${data.length} produtos carregados da nuvem.`;
   }
 }
 
 async function loadTreatmentsFromSupabase() {
-  const { data, error } = await dbClient.from('treatments').select('*');
+  const { data, error } = await dbClient.from('treatments').select('*').range(0, 9999);
   if (!error && data) {
     res = {};
     order = [];
     data.forEach(item => {
-      res[item.sku] = { s: item.sku, d: item.desc, sit: item.sit, sal: item.sal, sg: item.sg, t: item.t, n: item.n };
-      order.push(item.sku);
+      const sVal = str(item.sku ?? item.s ?? '');
+      const dVal = str(item.desc ?? item.d ?? '');
+      res[sVal] = { s: sVal, d: dVal, sit: item.sit, sal: item.sal, sg: item.sg, t: item.t, n: item.n };
+      order.push(sVal);
     });
     render();
   }
@@ -231,12 +241,19 @@ function num(v) {
 function analyze(code) {
   if (idx.size === 0) return { err: 'Base de produtos vazia. Carregue a planilha e clique em Sincronizar.' };
   const k = norm(code); if (!k) return { err: 'Informe o SKU ou código de barras.' };
-  const x = idx.get(k);
+  
+  // Tenta buscar normalizado e também exato
+  let x = idx.get(k) || idx.get(str(code));
+  
   if (!x) return { err: 'Código não encontrado na base sincronizada.' };
-  const sal = num(x.sl), sg = num(x.sg);
-  const sit = (x.exc !== '' || FLRE.test(x.desc)) ? 'F/L' : 'Ativo';
-  if (isNaN(sal)) return { err: 'Saldo ausente na base para o SKU ' + x.sku + '.' };
-  return { x, sal, sg, sit };
+  
+  const sal = num(x.sl ?? x.QT_LOJA), sg = num(x.sg ?? x.QT_LOGISTICA);
+  const descricao = x.desc ?? x.DESCRICAO ?? '';
+  const exclusao = x.exc ?? x.DTEXCLUSAO ?? '';
+  const sit = (exclusao !== '' || FLRE.test(descricao)) ? 'F/L' : 'Ativo';
+  
+  if (isNaN(sal)) return { err: 'Saldo ausente na base para o SKU ' + (x.sku ?? x.CODPROD) + '.' };
+  return { x: { sku: x.sku ?? x.CODPROD, desc: descricao, bar: x.bar ?? x.CODAUXILIAR }, sal, sg, sit };
 }
 
 async function run(code) {
@@ -254,13 +271,13 @@ async function run(code) {
   const n = (prev ? prev.n : 0) + 1;
   
   const treatmentData = {
-    sku: x.sku,
-    desc: x.desc,
-    sit: sit,
-    sal: sal,
+    sku: String(x.sku),
+    desc: String(x.desc),
+    sit: String(sit),
+    sal: Number(sal),
     sg: String(sg),
-    t: t,
-    n: n,
+    t: String(t),
+    n: Number(n),
     updated_at: new Date()
   };
 
@@ -279,10 +296,10 @@ async function run(code) {
   render();
 }
 
-function go() { const v = $('#code').value; $('#code').value = ''; run(v); $('#code').focus(); }
+function go() { const v = $('#code').value; $('#code').value = ''; run(v); $('#code'].focus(); }
 $('#go').onclick = go;
 $('#code').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
-$$('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('on', x === b)); $('#code').focus(); });
+$$('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('on', x === b)); $('#code'].focus(); });
 $$('[data-t]').forEach(b => b.onclick = () => { $$('[data-t]').forEach(x => x.classList.toggle('on', x === b)); ['an', 'rel', 'res'].forEach(id => $('#' + id).classList.toggle('hid', id !== b.dataset.t)); render(); });
 
 let relSel = 'CONTAGEM';
