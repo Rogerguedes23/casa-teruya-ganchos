@@ -114,7 +114,7 @@ h2{font-size:17px;font-weight:700;color:var(--h);margin:0 0 10px}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// CONFIGURAÇÃO DO SUPABASE
+// CONFIGURAÇÃO DO SUPABASE (Usando a instância global instanciada como 'db')
 const SUPABASE_URL = 'https://incjjuymlcisoacmklcy.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_DhrPY16l25xQhbCO1Rc05g_1OTYouE4';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -246,7 +246,7 @@ async function run(code) {
   const { x, sal, sg, sit } = a;
   
   if (mode === 'consultar') {
-    $('#out').innerHTML = `<div class="card blk">SKU: ${esc(x.sku)}<br>Descrição: ${esc(x.desc)}<br>Situação: ${sit}<br>Saldo loja: ${sal}<br>Saldo logística: ${fmt(sg)}${x.bar ? '<br>Cód. barras: ' + esc(x.bar) : ''}</div>`;
+    $('#out').innerHTML = `<div class="card blk">SKU: ${esc(x.sku)}<br>Descrição: ${esc(x.desc)}<br>Situação: ${sit}<br>Saldo loja:${sal}<br>Saldo logística: ${fmt(sg)}${x.bar ? '<br>Cód. barras: ' + esc(x.bar) : ''}</div>`;
     return;
   }
   
@@ -276,25 +276,13 @@ async function run(code) {
   
   hist = hist.filter(h => h !== x.sku); hist.unshift(x.sku); hist = hist.slice(0, 6);
 
-  $('#out').innerHTML = `<div class="card blk">SKU: ${esc(x.sku)}<br>Descrição: ${esc(x.desc)}<br>Situação: ${sit}<br>Saldo loja: ${sal}<br>Saldo logística: ${fmt(sg)}<br>Tratativa: <span class="badge ${t}">${TR[t]}</span></div>`;
-  render();
-}
-
-function go() { const v = $('#code').value; $('#code').value = ''; run(v); $('#code'].focus(); }
-$('#go').onclick = go;
-$('#code').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
-$$('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('on', x === b)); $('#code').focus(); });
-$$('[data-t]').forEach(b => b.onclick = () => { $$('[data-t]').forEach(x => x.classList.toggle('on', x === b)); ['an', 'rel', 'res'].forEach(id => $('#' + id).classList.toggle('hid', id !== b.dataset.t)); render(); });
-
-let relSel = 'CONTAGEM';
-function lst(t) { return order.map(k => res[k]).filter(r => r && r.t === t); }
-function trat(r) { return TR[r.t] + (r.n > 1 ? ` — reenviado (${r.n}x)` : ''); }
+  $('#out').innerHTML = `<div class="card blk">SKU: ${esc(x.sku)}<br>Descrição: ${esc(x.desc)}<br>Situação: ${sit}<br>Saldo loja:${sal}<br>Saldo logística: ${fmt(sg)}<br>Tratativa: <span class="badge ${t}">${TR[t]}</span></div>`; render(); }  function go() { const v = $('#code').value; $('#code').value = ''; run(v); $('#code').focus(); } $('#go').onclick = go; $('#code').addEventListener('keydown', e => { if (e.key === 'Enter') go(); }); $$('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('on', x === b)); $('#code').focus(); }); $$('[data-t]').forEach(b => b.onclick = () => { $$('[data-t]').forEach(x => x.classList.toggle('on', x === b)); ['an', 'rel', 'res'].forEach(id => $('#' + id).classList.toggle('hid', id !== b.dataset.t)); render(); });  let relSel = 'CONTAGEM'; function lst(t) { return order.map(k => res[k]).filter(r => r && r.t === t); } function trat(r) { return TR[r.t] + (r.n > 1 ? ` — reenviado (${r.n}x)` : ''); }
 
 function render() {
   $('#hist').innerHTML = hist.length ? `<div class="card"><div class="mut" style="margin-bottom:6px">Últimos analisados</div>${hist.map(k => { const r = res[k]; return `<div class="row" style="justify-content:space-between;padding:4px 0"><span>${esc(r.s)} <span class="mut">${esc(r.d)}</span></span><span class="badge ${r.t}">${TR[r.t]}</span></div>`; }).join('')}</div>` : '';
   const hdr = '<tr><th>SKU</th><th>Descrição</th><th>Situação</th><th>Saldo loja</th><th>Saldo logística</th><th>Tratativa</th></tr>';
   const tbl = (p, empty) => p.length ? `<table>${hdr}${p.map(r => `<tr><td>${esc(r.s)}</td><td>${esc(r.d)}</td><td>${r.sit}</td><td>${r.sal}</td><td>${fmt(r.sg)}</td><td>${esc(trat(r))}</td></tr>`).join('')}</table>` : `<span class="mut">${empty}</span>`;
-  const tot = (p, w) => `Total de SKUs ${w}: ${p.reduce((a, r) => a + r.n, 0)} | Registros únicos: ${p.length}`;
+  const tot = (p, w) => `Total de SKUs ${w}: ${p.reduce((a, r) => a + r.n, 0)} \vert{} Registros únicos: ${p.length}`;
   
   const pc = lst('CONTAGEM'), pr = lst('RETIRAR'), pf = lst('FICHA');
   $('#relTbl').innerHTML = tbl(pc, 'Nenhum SKU pendente de contagem.');
@@ -308,40 +296,4 @@ function render() {
   $('#tsv').value = ['SKU\tDescrição\tSituação\tSaldo loja\tSaldo logística\tTratativa'].concat(sel.map(r => [r.s, r.d, r.sit, r.sal, fmt(r.sg), trat(r)].join('\t'))).join('\n');
   
   const c = { RETIRAR: 0, FICHA: 0, CONTAGEM: 0 }; Object.values(res).forEach(r => c[r.t]++);
-  $('#resBox').innerHTML = `<div class="stat"><span>Retirar gancho</span><strong>${c.RETIRAR}</strong></div><div class="stat"><span>Ficha de ruptura</span><strong>${c.FICHA}</strong></div><div class="stat"><span>Contagem</span><strong>${c.CONTAGEM}</strong></div><div class="stat"><span>Total analisado</span><strong>${c.RETIRAR + c.FICHA + c.CONTAGEM}</strong></div>`;
-}
-
-$$('[data-x]').forEach(b => b.onclick = () => { relSel = b.dataset.x; $$('[data-x]').forEach(x => x.classList.toggle('on', x === b)); render(); });
-
-$('#cp').onclick = function() {
-  const t = $('#tsv');
-  t.select();
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(t.value).then(() => {
-      $('#cp').textContent = 'Copiado';
-      setTimeout(() => $('#cp').textContent = 'Copiar para planilha', 1500);
-    }).catch(() => {
-      document.execCommand('copy');
-      $('#cp').textContent = 'Copiado';
-      setTimeout(() => $('#cp').textContent = 'Copiar para planilha', 1500);
-    });
-  } else {
-    document.execCommand('copy');
-    $('#cp').textContent = 'Copiado';
-    setTimeout(() => $('#cp').textContent = 'Copiar para planilha', 1500);
-  }
-};
-
-$('#clr').onclick = async () => {
-  if (confirm('Tem certeza que deseja apagar todas as tratativas do Supabase para todos os usuários?')) {
-    await db.from('treatments').delete().neq('sku', '');
-    res = {}; order = []; hist = [];
-    $('#out').innerHTML = '';
-    render();
-  }
-};
-
-initApp();
-</script>
-</body>
-</html>
+  $('#resBox').innerHTML = `<div class="stat"><span>Retirar gancho</span><strong>${c.RETIRAR}</strong></div><div class="stat"><span>Ficha de ruptura</span><strong>${c.FICHA}</strong></div><div class="
