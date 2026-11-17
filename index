@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tratativa de Ganchos — Casa Teruya</title>
+<meta name="theme-color" content="#002F1B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet">
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{--bg:#F2EFED;--card:#FFFFFF;--tx:#212121;--mut:#4E4E4C;--bd:#E2DCD8;--rd:#BD0000;--gr:#002F1B;--gm:#3A8E5C;--or:#FF8A0D;--pk:#F9D2DB;--h:#BD0000;--inp:#F2EFED;--ring:#BD0000;box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B1812;--card:#122419;--tx:#F2EFED;--mut:#AEBBB3;--bd:#274434;--h:#F46262;--inp:#0B1812;--pk:#4F0B0B;--ring:#FF8A0D}}
+:root[data-theme="dark"]{--bg:#0B1812;--card:#122419;--tx:#F2EFED;--mut:#AEBBB3;--bd:#274434;--h:#F46262;--inp:#0B1812;--pk:#4F0B0B;--ring:#FF8A0D}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 "Hanken Grotesk",Verdana,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.top{background:var(--gr);padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 14px}
+.top .in{max-width:760px;margin:0 auto}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;color:var(--h);margin:4px 0 14px}
+h1::before{content:"";width:14px;height:20px;background:var(--rd);clip-path:polygon(0 0,55% 0,100% 50%,55% 100%,0 100%);flex:none}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,select,input,textarea{font:inherit;color:var(--tx)}
+button{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:500}
+button:focus-visible,select:focus-visible{outline:3px solid var(--or);outline-offset:1px}
+button.p{background:var(--rd);color:#fff;border-color:var(--rd);font-weight:700}
+button.on{background:var(--gr);color:#fff;border-color:var(--gr);font-weight:700}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.on{background:var(--or);color:#002F1B;border-color:var(--or)}}
+:root[data-theme="dark"] button.on{background:var(--or);color:#002F1B;border-color:var(--or)}
+input[type=text]{flex:1;min-width:0;font-size:20px;padding:12px;border:2px solid var(--bd);border-radius:10px;background:var(--inp)}
+input[type=text]:focus{outline:none;border-color:var(--ring)}
+select{background:var(--inp);border:1px solid var(--bd);border-radius:6px;padding:4px}
+.mut{color:var(--mut);font-size:14px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs button{flex:1}
+.blk{font-size:16px;line-height:1.8}
+.badge{display:inline-block;padding:3px 20px 3px 12px;font-weight:700;font-size:14px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%)}
+.RETIRAR{background:var(--rd);color:#fff}.FICHA{background:var(--or);color:#002F1B}.CONTAGEM{background:var(--gr);color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .CONTAGEM{background:var(--gm);color:#fff}}
+:root[data-theme="dark"] .CONTAGEM{background:var(--gm);color:#fff}
+.msg{padding:12px;border-radius:10px;background:var(--pk);color:var(--rd);font-weight:700;border-left:5px solid var(--rd)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .msg{color:#FFC9C9}}
+:root[data-theme="dark"] .msg{color:#FFC9C9}
+.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{font-weight:700;border-bottom:2px solid var(--or)}
+textarea{width:100%;min-height:110px;background:var(--inp);border:1px solid var(--bd);border-radius:8px;padding:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+.stat{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd);font-size:18px}
+.stat strong{font-weight:900}
+h2{font-size:17px;font-weight:700;color:var(--h);margin:0 0 10px}
+.hid{display:none}
+</style>
+</head>
+<body>
+<header class="top"><div class="in"><span style="color:#fff;font-weight:900;font-size:20px;">CASA TERUYA</span></div></header>
+<main>
+<h1>Tratativa de ganchos</h1>
+
+<div class="card" id="baseCard">
+  <div class="row"><input type="file" id="file" accept=".xlsx,.xls,.csv,.tsv"><span class="mut" id="baseInfo">Carregue a base de SKUs (Excel ou CSV) para sincronizar com o Supabase.</span></div>
+  <div id="mapBox" class="hid" style="margin-top:10px">
+    <div class="mut">Confira as colunas:</div>
+    <div class="row" id="mapSel" style="margin-top:6px"></div>
+    <button class="p" id="okMap" style="margin-top:10px">Salvar base no Supabase</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button data-t="an" class="on">Analisar</button>
+  <button data-t="rel">Relatório</button>
+  <button data-t="res">Resumo</button>
+</div>
+
+<section id="an">
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <button data-m="analisar" class="on">Analisar</button>
+      <button data-m="consultar">Consultar SKU</button>
+    </div>
+    <div class="row"><input type="text" id="code" placeholder="SKU ou código de barras" autocomplete="off" inputmode="text"><button class="p" id="go">OK</button></div>
+    <div class="mut" style="margin-top:6px">A busca aceita SKU ou código de barras. Dados sincronizados em tempo real.</div>
+  </div>
+  <div id="out"></div>
+  <div id="hist"></div>
+</section>
+
+<section id="rel" class="hid">
+  <div class="card">
+    <h2>Encaminhar para contagem</h2>
+    <div class="scroll" id="relTbl"></div>
+    <div id="relTot" style="margin-top:10px;font-weight:600"></div>
+  </div>
+  <div class="card">
+    <h2>Retirar gancho</h2>
+    <div class="scroll" id="relRet"></div>
+    <div id="relRetTot" style="margin-top:10px;font-weight:600"></div>
+  </div>
+  <div class="card">
+    <h2>Ficha de ruptura</h2>
+    <div class="scroll" id="relFic"></div>
+    <div id="relFicTot" style="margin-top:10px;font-weight:600"></div>
+  </div>
+  <div class="card">
+    <div class="row" style="margin-bottom:8px"><strong>Exportar</strong><button id="cp">Copiar para planilha</button><button id="clr">Limpar sessões na nuvem</button></div>
+    <div class="row" style="margin-bottom:8px"><button data-x="CONTAGEM" class="on">Contagem</button><button data-x="RETIRAR">Retirar gancho</button><button data-x="FICHA">Ficha de ruptura</button></div>
+    <textarea id="tsv" readonly></textarea>
+  </div>
+</section>
+
+<section id="res" class="hid"><div class="card" id="resBox"></div></section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// CONFIGURAÇÃO DO SUPABASE
+const SUPABASE_URL = 'https://nesmbgqsobfduvksjnbn.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_1OytOp1Lp9Zl0odZQ3jyuQ_qE90z75T';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const str=v=>v==null?'':String(v).trim();
+const norm=s=>str(s).toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^0+/,'');
+const plain=s=>str(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const FIELDS=[['sku','SKU'],['bar','Código de barras'],['desc','Descrição'],['exc','Data de exclusão'],['sl','Saldo loja'],['sg','Saldo logística']];
+const TR={RETIRAR:'RETIRAR GANCHO',FICHA:'FICHA DE RUPTURA',CONTAGEM:'ENCAMINHAR PARA CONTAGEM'};
+const FLRE=/(^|[^A-Za-zÀ-ÿ0-9])(F\/L|FL)(?=$|[^A-Za-zÀ-ÿ0-9])/i;
+
+let table=null,map={},idx=new Map(),res={},order=[],mode='analisar',hist=[];
+
+async function initApp() {
+  await loadProductsFromSupabase();
+  await loadTreatmentsFromSupabase();
+  setupRealtime();
+}
+
+async function loadProductsFromSupabase() {
+  const { data, error } = await supabase.from('products').select('*');
+  if (!error && data && data.length > 0) {
+    idx = new Map();
+    data.forEach(x => {
+      idx.set(norm(x.sku), x);
+      if(x.bar) str(x.bar).split(/[;,|\/\s]+/).forEach(t => {
+        const k = norm(t);
+        if(k && !idx.has(k)) idx.set(k, x);
+      });
+    });
+    $('#baseInfo').textContent = `Base sincronizada: ${data.length} produtos carregados da nuvem.`;
+  }
+}
+
+async function loadTreatmentsFromSupabase() {
+  const { data, error } = await supabase.from('treatments').select('*');
+  if (!error && data) {
+    res = {};
+    order = [];
+    data.forEach(item => {
+      res[item.sku] = { s: item.sku, d: item.desc, sit: item.sit, sal: item.sal, sg: item.sg, t: item.t, n: item.n };
+      order.push(item.sku);
+    });
+    render();
+  }
+}
+
+function setupRealtime() {
+  supabase.channel('public:treatments')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'treatments' }, payload => {
+      loadTreatmentsFromSupabase();
+    })
+    .subscribe();
+}
+
+function automap(h){
+  const p=h.map(plain),used=new Set(),pick=(re)=>{const i=p.findIndex((x,j)=>!used.has(j)&&re.test(x));if(i>=0)used.add(i);return i};
+  map.bar=pick(/barras|auxiliar|ean|gtin|cod.?aux/);
+  map.exc=pick(/exclus/);
+  map.sl=pick(/loja/);
+  map.sg=pick(/logist/);
+  if(map.sl<0)map.sl=pick(/saldo|estoque|qtd|quant/);
+  map.desc=pick(/descri|produto|nome/);
+  map.sku=pick(/^sku$|^cod|sku|codigo|cod/);
+}
+
+function showMap(){
+  const h=table[0].map((x,i)=>str(x)||('Coluna '+(i+1)));
+  $('#mapSel').innerHTML=FIELDS.map(([k,l])=>`<label class="mut">${l}<br><select data-k="${k}"><option value="-1">—</option>${h.map((x,i)=>`<option value="${i}"${map[k]===i?' selected':''}>${esc(x)}</option>`).join('')}</select></label>`).join('');
+  $('#mapBox').classList.remove('hid');
+}
+
+$('#file').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader(),csv=/\.(csv|tsv|txt)$/i.test(f.name);
+  r.onload=()=>{
+    try{
+      const wb=XLSX.read(r.result,{type:csv?'string':'array'});
+      table=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''});
+      automap(table[0].map(str));showMap();
+    }catch(err){$('#baseInfo').textContent='Não foi possível ler o arquivo.'}
+  };
+  csv?r.readAsText(f):r.readAsArrayBuffer(f);
+});
+
+$('#okMap').onclick = async () => {
+  $$('#mapSel select').forEach(s => map[s.dataset.k] = +s.value);
+  const g = (r, k) => map[k] >= 0 ? str(r[map[k]]) : '';
+  const rows = table.slice(1).filter(r => r.some(c => str(c) !== '')).map(r => ({
+    sku: g(r, 'sku'),
+    bar: g(r, 'bar'),
+    desc: g(r, 'desc'),
+    exc: g(r, 'exc'),
+    sl: g(r, 'sl'),
+    sg: g(r, 'sg')
+  }));
+
+  $('#baseInfo').textContent = 'Enviando base para o Supabase...';
+  
+  const { error } = await supabase.from('products').upsert(rows);
+  if (error) {
+    alert('Erro ao salvar no Supabase: ' + error.message);
+    return;
+  }
+  
+  await loadProductsFromSupabase();
+  $('#mapBox').classList.add('hid');
+  $('#code').focus();
+};
+
+const fmt=v=>(v==null||isNaN(v))?'—':v;
+function num(v){
+  let s=str(v).replace(/\s/g,'');if(s==='')return NaN;
+  if(s.includes(',')&&s.includes('.'))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(',','.');
+  return Number(s);
+}
+
+function analyze(code){
+  if(idx.size === 0) return {err:'Base de produtos vazia. Carregue uma planilha para cadastrar no Supabase.'};
+  const k=norm(code); if(!k) return {err:'Informe o SKU ou código de barras.'};
+  const x=idx.get(k);
+  if(!x) return {err:'Código não encontrado na base.'};
+  const sal=num(x.sl), sg=num(x.sg);
+  const sit=(x.exc!==''||FLRE.test(x.desc))?'F/L':'Ativo';
+  if(isNaN(sal)) return {err:'Saldo ausente na base para o SKU '+x.sku+'.'};
+  return {x, sal, sg, sit};
+}
+
+async function run(code){
+  const a=analyze(code);
+  if(a.err){$('#out').innerHTML=`<div class="msg">${esc(a.err)}</div>`;return}
+  const {x, sal, sg, sit}=a;
+  
+  if(mode==='consultar'){
+    $('#out').innerHTML=`<div class="card blk">SKU: ${esc(x.sku)}<br>Descrição: ${esc(x.desc)}<br>Situação: ${sit}<br>Saldo loja: ${sal}<br>Saldo logística: ${fmt(sg)}${x.bar?'<br>Cód. barras: '+esc(x.bar):''}</div>`;
+    return;
+  }
+  
+  const t = sal>0 ? 'CONTAGEM' : (sit==='F/L' ? 'RETIRAR' : 'FICHA');
+  const prev = res[x.sku];
+  const n = (prev ? prev.n : 0) + 1;
+  
+  const treatmentData = {
+    sku: x.sku,
+    desc: x.desc,
+    sit: sit,
+    sal: sal,
+    sg: String(sg),
+    t: t,
+    n: n,
+    updated_at: new Date()
+  };
+
+  const { error } = await supabase.from('treatments').upsert(treatmentData);
+  if(error){
+    alert('Erro ao sincronizar tratativa: '+error.message);
+    return;
+  }
+
+  res[x.sku] = { s: x.sku, d: x.desc, sit, sal, sg, t, n };
+  if(!order.includes(x.sku)) order.push(x.sku);
+  
+  hist=hist.filter(h=>h!==x.sku); hist.unshift(x.sku); hist=hist.slice(0,6);
+
+  $('#out').innerHTML=`<div class="card blk">SKU: ${esc(x.sku)}<br>Descrição: ${esc(x.desc)}<br>Situação: ${sit}<br>Saldo loja: ${sal}<br>Saldo logística: ${fmt(sg)}<br>Tratativa: <span class="badge ${t}">${TR[t]}</span></div>`;
+  render();
+}
+
+function go(){const v=$('#code').value;$('#code').value='';run(v);$('#code'].focus()}
+$('#go').onclick=go;
+$('#code').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+$$('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;$$('[data-m]').forEach(x=>x.classList.toggle('on',x===b));$('#code'].focus()});
+$$('[data-t]').forEach(b=>b.onclick=()=>{$$('[data-t]').forEach(x=>x.classList.toggle('on',x===b));['an','rel','res'].forEach(id=>$('#'+id).classList.toggle('hid',id!==b.dataset.t));render()});
+
+let relSel='CONTAGEM';
+function lst(t){return order.map(k=>res[k]).filter(r=>r&&r.t===t)}
+function trat(r){return TR[r.t]+(r.n>1?` — reenviado (${r.n}x)`:'')}
+
+function render(){
+  $('#hist').innerHTML=hist.length?`<div class="card"><div class="mut" style="margin-bottom:6px">Últimos analisados</div>${hist.map(k=>{const r=res[k];return `<div class="row" style="justify-content:space-between;padding:4px 0"><span>${esc(r.s)} <span class="mut">${esc(r.d)}</span></span><span class="badge ${r.t}">${TR[r.t]}</span></div>`}).join('')}</div>`:'';
+  const hdr='<tr><th>SKU</th><th>Descrição</th><th>Situação</th><th>Saldo loja</th><th>Saldo logística</th><th>Tratativa</th></tr>';
+  const tbl=(p,empty)=>p.length?`<table>${hdr}${p.map(r=>`<tr><td>${esc(r.s)}</td><td>${esc(r.d)}</td><td>${r.sit}</td><td>${r.sal}</td><td>${fmt(r.sg)}</td><td>${esc(trat(r))}</td></tr>`).join('')}</table>`:`<span class="mut">${empty}</span>`;
+  const tot=(p,w)=>`Total de SKUs ${w}: ${p.reduce((a,r)=>a+r.n,0)} | Registros únicos: ${p.length}`;
+  
+  const pc=lst('CONTAGEM'),pr=lst('RETIRAR'),pf=lst('FICHA');
+  $('#relTbl').innerHTML=tbl(pc,'Nenhum SKU pendente de contagem.');
+  $('#relTot').textContent=tot(pc,'encaminhados');
+  $('#relRet').innerHTML=tbl(pr,'Nenhum SKU para retirar gancho.');
+  $('#relRetTot').textContent=tot(pr,'analisados');
+  $('#relFic').innerHTML=tbl(pf,'Nenhum SKU com ficha de ruptura.');
+  $('#relFicTot').textContent=tot(pf,'analisados');
+  
+  const sel=lst(relSel);
+  $('#tsv').value=['SKU\tDescrição\tSituação\tSaldo loja\tSaldo logística\tTratativa'].concat(sel.map(r=>[r.s,r.d,r.sit,r.sal,fmt(r.sg),trat(r)].join('\t'))).join('\n');
+  
+  const c={RETIRAR:0,FICHA:0,CONTAGEM:0};Object.values(res).forEach(r=>c[r.t]++);
+  $('#resBox').innerHTML=`<div class="stat"><span>Retirar gancho</span><strong>${c.RETIRAR}</strong></div><div class="stat"><span>Ficha de ruptura</span><strong>${c.FICHA}</strong></div><div class="stat"><span>Contagem</span><strong>${c.CONTAGEM}</strong></div><div class="stat"><span>Total analisado</span><strong>${c.RETIRAR+c.FICHA+c.CONTAGEM}</strong></div>`;
+}
+
+$$('[data-x]').forEach(b=>b.onclick=()=>{relSel=b.dataset.x;$$('[data-x]').forEach(x=>x.classList.toggle('on',x===b));render()});
+
+$('#cp').onclick = function() {
+  const t = $('#tsv');
+  t.select();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t.value).then(() => {
+      $('#cp').textContent = 'Copiado';
+      setTimeout(() => $('#cp').textContent = 'Copiar para planilha', 1500);
+    }).catch(() => {
+      document.execCommand('copy');
+      $('#cp').textContent = 'Copiado';
+      setTimeout(() => $('#cp').textContent = 'Copiar para planilha', 1500);
+    });
+  } else {
+    document.execCommand('copy');
+    $('#cp').textContent = 'Copiado';
+    setTimeout(() => $('#cp').textContent = 'Copiar para planilha', 1500);
+  }
+};
+
+$('#clr').onclick=async()=>{
+  if(confirm('Tem certeza que deseja apagar todas as tratativas do Supabase para todos os usuários?')){
+    await supabase.from('treatments').delete().neq('sku', '');
+    res={};order=[];hist=[];
+    $('#out').innerHTML='';
+    render();
+  }
+};
+
+initApp();
+</script>
+</body>
+</html>
