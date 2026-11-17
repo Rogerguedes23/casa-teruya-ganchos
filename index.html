@@ -142,13 +142,29 @@ async function initApp() {
   setupRealtime();
 }
 
-async function loadProductsFromSupabase() {
-  const { data, error } = await dbClient.from('products').select('*').range(0, 49999);
-  if (error) {
-    $('#baseInfo').innerHTML = `<span style="color:var(--rd)">Erro ao carregar produtos: ${esc(error.message)}</span>`;
-    return;
+// O Supabase limita cada requisição a 1000 linhas, então busca em páginas
+async function fetchAll(table, orderCol, onProgress) {
+  const PAGE = 1000;
+  let all = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await dbClient.from(table).select('*').order(orderCol).range(from, from + PAGE - 1);
+    if (error) {
+      $('#baseInfo').innerHTML = `<span style="color:var(--rd)">Erro ao carregar ${table}: ${esc(error.message)}</span>`;
+      return null;
+    }
+    all = all.concat(data);
+    if (onProgress) onProgress(all.length);
+    if (data.length < PAGE) break;
   }
-  if (data && data.length > 0) {
+  return all;
+}
+
+async function loadProductsFromSupabase() {
+  const data = await fetchAll('products', 'sku', p => {
+    $('#baseInfo').textContent = `Carregando base da nuvem... ${p} produtos`;
+  });
+  if (data === null) return;
+  if (data.length > 0) {
     idx = new Map();
     data.forEach(x => {
       const skuVal = str(x.sku ?? x.CODPROD ?? '');
@@ -166,8 +182,8 @@ async function loadProductsFromSupabase() {
 }
 
 async function loadTreatmentsFromSupabase() {
-  const { data, error } = await dbClient.from('treatments').select('*').range(0, 9999);
-  if (!error && data) {
+  const data = await fetchAll('treatments', 'sku');
+  if (data) {
     res = {};
     order = [];
     data.forEach(item => {
