@@ -117,7 +117,7 @@ h2{font-size:17px;font-weight:700;color:var(--h);margin:0 0 10px}
 // CONFIGURAÇÃO DO SUPABASE
 const SUPABASE_URL = 'https://incjjuymlcisoacmklcy.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_DhrPY16l25xQhbCO1Rc05g_1OTYouE4';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -135,7 +135,7 @@ async function initApp() {
 }
 
 async function loadProductsFromSupabase() {
-  const { data, error } = await supabase.from('products').select('*');
+  const { data, error } = await db.from('products').select('*');
   if (!error && data && data.length > 0) {
     idx = new Map();
     data.forEach(x => {
@@ -150,7 +150,7 @@ async function loadProductsFromSupabase() {
 }
 
 async function loadTreatmentsFromSupabase() {
-  const { data, error } = await supabase.from('treatments').select('*');
+  const { data, error } = await db.from('treatments').select('*');
   if (!error && data) {
     res = {};
     order = [];
@@ -163,7 +163,7 @@ async function loadTreatmentsFromSupabase() {
 }
 
 function setupRealtime() {
-  supabase.channel('public:treatments')
+  db.channel('public:treatments')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'treatments' }, () => {
       loadTreatmentsFromSupabase();
     })
@@ -183,7 +183,6 @@ $('#file').addEventListener('change', e => {
       
       if (!json || json.length === 0) throw new Error("Planilha vazia");
 
-      // Mapeamento automático direto para o padrão do WinThor
       parsedRows = json.map(r => ({
         sku: str(r.CODPROD ?? r.SKU ?? r.codigo ?? r.CodProd ?? ''),
         bar: str(r.CODAUXILIAR ?? r.BARCODE ?? r.EAN ?? r.CodAuxiliar ?? ''),
@@ -207,11 +206,10 @@ $('#syncBtn').onclick = async () => {
   $('#baseInfo').textContent = 'Enviando base para o Supabase... Aguarde.';
   $('#syncBtn').style.display = 'none';
 
-  // Envia em lotes de 500 para evitar timeout
   const batchSize = 500;
   for (let i = 0; i < parsedRows.length; i += batchSize) {
     const batch = parsedRows.slice(i, i + batchSize);
-    const { error } = await supabase.from('products').upsert(batch);
+    const { error } = await db.from('products').upsert(batch);
     if (error) {
       alert('Erro ao salvar no Supabase: ' + error.message);
       $('#syncBtn').style.display = 'inline-block';
@@ -267,7 +265,7 @@ async function run(code) {
     updated_at: new Date()
   };
 
-  const { error } = await supabase.from('treatments').upsert(treatmentData);
+  const { error } = await db.from('treatments').upsert(treatmentData);
   if (error) {
     alert('Erro ao sincronizar tratativa: ' + error.message);
     return;
@@ -282,7 +280,7 @@ async function run(code) {
   render();
 }
 
-function go() { const v = $('#code').value; $('#code').value = ''; run(v); $('#code').focus(); }
+function go() { const v = $('#code').value; $('#code').value = ''; run(v); $('#code'].focus(); }
 $('#go').onclick = go;
 $('#code').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
 $$('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('on', x === b)); $('#code').focus(); });
@@ -336,7 +334,7 @@ $('#cp').onclick = function() {
 
 $('#clr').onclick = async () => {
   if (confirm('Tem certeza que deseja apagar todas as tratativas do Supabase para todos os usuários?')) {
-    await supabase.from('treatments').delete().neq('sku', '');
+    await db.from('treatments').delete().neq('sku', '');
     res = {}; order = []; hist = [];
     $('#out').innerHTML = '';
     render();
