@@ -114,7 +114,6 @@ h2{font-size:17px;font-weight:700;color:var(--h);margin:0 0 10px}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// CONFIGURAÇÃO DO SUPABASE (Instância única como 'dbClient')
 const SUPABASE_URL = 'https://incjjuymlcisoacmklcy.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_DhrPY16l25xQhbCO1Rc05g_1OTYouE4';
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -280,10 +279,10 @@ async function run(code) {
   render();
 }
 
-function go() { const v = $('#code').value; $('#code').value = ''; run(v); $('#code'].focus(); }
+function go() { const v = $('#code').value; $('#code').value = ''; run(v); $('#code').focus(); }
 $('#go').onclick = go;
 $('#code').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
-$$('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('on', x === b)); $('#code'].focus(); });
+$$('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('on', x === b)); $('#code').focus(); });
 $$('[data-t]').forEach(b => b.onclick = () => { $$('[data-t]').forEach(x => x.classList.toggle('on', x === b)); ['an', 'rel', 'res'].forEach(id => $('#' + id).classList.toggle('hid', id !== b.dataset.t)); render(); });
 
 let relSel = 'CONTAGEM';
