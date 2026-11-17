@@ -134,7 +134,6 @@ async function initApp() {
 }
 
 async function loadProductsFromSupabase() {
-  // Puxa todos os registros em lotes se necessário, aumentando o limite para 50 mil
   const { data, error } = await dbClient.from('products').select('*').range(0, 49999);
   if (!error && data && data.length > 0) {
     idx = new Map();
@@ -143,7 +142,7 @@ async function loadProductsFromSupabase() {
       const barVal = str(x.bar ?? x.CODAUXILIAR ?? '');
       if(skuVal) {
         idx.set(norm(skuVal), x);
-        idx.set(norm(x.sku), x); // garante mapeamento exato
+        idx.set(norm(x.sku), x);
       }
       if(barVal) {
         barVal.split(/[;,|\/\s]+/).forEach(t => {
@@ -242,9 +241,7 @@ function analyze(code) {
   if (idx.size === 0) return { err: 'Base de produtos vazia. Carregue a planilha e clique em Sincronizar.' };
   const k = norm(code); if (!k) return { err: 'Informe o SKU ou código de barras.' };
   
-  // Tenta buscar normalizado e também exato
   let x = idx.get(k) || idx.get(str(code));
-  
   if (!x) return { err: 'Código não encontrado na base sincronizada.' };
   
   const sal = num(x.sl ?? x.QT_LOJA), sg = num(x.sg ?? x.QT_LOGISTICA);
